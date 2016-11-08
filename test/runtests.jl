@@ -20,4 +20,5 @@ using Base.Test
     include("matrix_multiply.jl")
     include("solve.jl")
     include("deque.jl")
+    include("fixed_size_arrays.jl")
 end
