@@ -1,11 +1,8 @@
-import Base: .+, .-, .*, ./, .\, .%, .^
+import Base: .+, .-, .*, ./, .//, .\, .%, .^, .<<, .>>, .==, .<, .>, .<=, .>=, !, &, |, $
 
 # Support for elementwise ops on AbstractArray{S<:StaticArray} with Number
 Base.promote_op{Op,A<:StaticArray,T<:Number}(op::Op, ::Type{A}, ::Type{T}) = similar_type(A, promote_op(op, eltype(A), T))
 Base.promote_op{Op,T<:Number,A<:StaticArray}(op::Op, ::Type{T}, ::Type{A}) = similar_type(A, promote_op(op, T, eltype(A)))
-
-
-# TODO any more operators?
 
 @inline .-(a1::StaticArray) = broadcast(-, a1)
 
@@ -13,25 +10,65 @@ Base.promote_op{Op,T<:Number,A<:StaticArray}(op::Op, ::Type{T}, ::Type{A}) = sim
 @inline .-(a1::StaticArray, a2::StaticArray) = broadcast(-, a1, a2)
 @inline .*(a1::StaticArray, a2::StaticArray) = broadcast(*, a1, a2)
 @inline ./(a1::StaticArray, a2::StaticArray) = broadcast(/, a1, a2)
+@inline .//(a1::StaticArray, a2::StaticArray) = broadcast(//, a1, a2)
 @inline .\(a1::StaticArray, a2::StaticArray) = broadcast(\, a1, a2)
 @inline .%(a1::StaticArray, a2::StaticArray) = broadcast(%, a1, a2)
 @inline .^(a1::StaticArray, a2::StaticArray) = broadcast(^, a1, a2)
+@inline .<<(a1::StaticArray, a2::StaticArray) = broadcast(<<, a1, a2)
+@inline .>>(a1::StaticArray, a2::StaticArray) = broadcast(<<, a1, a2)
+@inline .==(a1::StaticArray, a2::StaticArray) = broadcast(==, a1, a2)
+@inline .<(a1::StaticArray, a2::StaticArray) = broadcast(<, a1, a2)
+@inline .>(a1::StaticArray, a2::StaticArray) = broadcast(>, a1, a2)
+@inline .<=(a1::StaticArray, a2::StaticArray) = broadcast(<=, a1, a2)
+@inline .>=(a1::StaticArray, a2::StaticArray) = broadcast(>=, a1, a2)
 
 @inline .+(a1::StaticArray, a2::Number) = broadcast(+, a1, a2)
 @inline .-(a1::StaticArray, a2::Number) = broadcast(-, a1, a2)
 @inline .*(a1::StaticArray, a2::Number) = broadcast(*, a1, a2)
 @inline ./(a1::StaticArray, a2::Number) = broadcast(/, a1, a2)
+@inline .//(a1::StaticArray, a2::Number) = broadcast(//, a1, a2)
 @inline .\(a1::StaticArray, a2::Number) = broadcast(\, a1, a2)
 @inline .%(a1::StaticArray, a2::Number) = broadcast(%, a1, a2)
 @inline .^(a1::StaticArray, a2::Number) = broadcast(^, a1, a2)
+@inline .<<(a1::StaticArray, a2::Number) = broadcast(<<, a1, a2)
+@inline .>>(a1::StaticArray, a2::Number) = broadcast(<<, a1, a2)
+@inline .==(a1::StaticArray, a2) = broadcast(==, a1, a2)
+@inline .<(a1::StaticArray, a2) = broadcast(<, a1, a2)
+@inline .>(a1::StaticArray, a2) = broadcast(>, a1, a2)
+@inline .<=(a1::StaticArray, a2) = broadcast(<=, a1, a2)
+@inline .>=(a1::StaticArray, a2) = broadcast(>=, a1, a2)
 
 @inline .+(a1::Number, a2::StaticArray) = broadcast(+, a1, a2)
 @inline .-(a1::Number, a2::StaticArray) = broadcast(-, a1, a2)
 @inline .*(a1::Number, a2::StaticArray) = broadcast(*, a1, a2)
 @inline ./(a1::Number, a2::StaticArray) = broadcast(/, a1, a2)
+@inline .//(a1::Number, a2::StaticArray) = broadcast(//, a1, a2)
 @inline .\(a1::Number, a2::StaticArray) = broadcast(\, a1, a2)
 @inline .%(a1::Number, a2::StaticArray) = broadcast(%, a1, a2)
 @inline .^(a1::Number, a2::StaticArray) = broadcast(^, a1, a2)
+@inline .<<(a1::Number, a2::StaticArray) = broadcast(<<, a1, a2)
+@inline .>>(a1::Number, a2::StaticArray) = broadcast(<<, a1, a2)
+@inline .==(a1, a2::StaticArray) = broadcast(==, a1, a2)
+@inline .<(a1, a2::StaticArray) = broadcast(<, a1, a2)
+@inline .>(a1, a2::StaticArray) = broadcast(>, a1, a2)
+@inline .<=(a1, a2::StaticArray) = broadcast(<=, a1, a2)
+@inline .>=(a1, a2::StaticArray) = broadcast(>=, a1, a2)
+
+# The remaining auto-vectorized boolean operators
+@inline !(a::StaticArray{Bool}) = broadcast(!, a)
+
+@inline (&){T1,T2}(a1::StaticArray{T1}, a2::StaticArray{T2}) = broadcast(&, a1, a2)
+@inline (|){T1,T2}(a1::StaticArray{T1}, a2::StaticArray{T2}) = broadcast(|, a1, a2)
+@inline ($){T1,T2}(a1::StaticArray{T1}, a2::StaticArray{T2}) = broadcast($, a1, a2)
+
+@inline (&){T}(a1::StaticArray{T}, a2::Number) = broadcast(&, a1, a2)
+@inline (|){T}(a1::StaticArray{T}, a2::Number) = broadcast(|, a1, a2)
+@inline ($){T}(a1::StaticArray{T}, a2::Number) = broadcast($, a1, a2)
+
+@inline (&){T}(a1::Number, a2::StaticArray{T}) = broadcast(&, a1, a2)
+@inline (|){T}(a1::Number, a2::StaticArray{T}) = broadcast(|, a1, a2)
+@inline ($){T}(a1::Number, a2::StaticArray{T}) = broadcast($, a1, a2)
+
 
 @generated function Base.zeros{SA <: StaticArray}(::Union{SA,Type{SA}})
     s = size(SA)
@@ -71,11 +108,8 @@ end
     end
 end
 
-# TODO allow ranges/collections as inputs...
-# Signatures = rand{SA <: StaticArray}(::AbstractRNG, range::AbstractArray, dims::Union{SA, Type{SA}})
-#              rand{SA <: StaticArray}(range::AbstractArray, dims::Union{SA, Type{SA}})
-# Also consider randcycle, randperm?
-@generated function Base.rand{SA <: StaticArray}(rng::AbstractRNG, ::Union{SA,Type{SA}})
+# Also consider randcycle, randperm? Also faster rand!(staticarray, collection)
+@generated function Base.rand{SA <: StaticArray}(rng::AbstractRNG, ::Type{SA})
     s = size(SA)
     T = eltype(SA)
     if T == Any
@@ -88,7 +122,27 @@ end
     end
 end
 
-@generated function Base.randn{SA <: StaticArray}(rng::AbstractRNG, ::Union{SA,Type{SA}})
+@generated function Base.rand{SA <: StaticArray}(rng::AbstractRNG, range::AbstractArray, ::Type{SA})
+    s = size(SA)
+    T = eltype(range)
+    v = [:(rand(rng, range)) for i = 1:prod(s)]
+    return quote
+        $(Expr(:meta, :inline))
+        $(Expr(:call, SA, Expr(:tuple, v...)))
+    end
+end
+
+@generated function Base.rand{SA <: StaticArray}(range::AbstractArray, ::Type{SA})
+    s = size(SA)
+    T = eltype(range)
+    v = [:(rand(range)) for i = 1:prod(s)]
+    return quote
+        $(Expr(:meta, :inline))
+        $(Expr(:call, SA, Expr(:tuple, v...)))
+    end
+end
+
+@generated function Base.randn{SA <: StaticArray}(rng::AbstractRNG, ::Type{SA})
     s = size(SA)
     T = eltype(SA)
     if T == Any
@@ -101,7 +155,7 @@ end
     end
 end
 
-@generated function Base.randexp{SA <: StaticArray}(rng::AbstractRNG, ::Union{SA,Type{SA}})
+@generated function Base.randexp{SA <: StaticArray}(rng::AbstractRNG, ::Type{SA})
     s = size(SA)
     T = eltype(SA)
     if T == Any

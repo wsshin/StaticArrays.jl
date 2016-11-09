@@ -5,8 +5,9 @@ module StaticArrays
 import Base: @pure, @propagate_inbounds, getindex, setindex!, size, similar,
              length, convert, promote_op, map, map!, reduce, mapreduce,
              broadcast, broadcast!, conj, transpose, ctranspose, hcat, vcat,
-             ones, zeros, eye, cross, vecdot, reshape, fill, fill!, det, inv,
-             eig, trace, vecnorm, norm, dot, diagm
+             ones, zeros, eye, one, cross, vecdot, reshape, fill, fill!, det,
+             inv, eig, trace, vecnorm, norm, dot, diagm, sum, prod, count, any,
+             all, sumabs, sumabs2, minimum, maximum, extrema, mean
 
 export StaticScalar, StaticArray, StaticVector, StaticMatrix
 export Scalar, SArray, SVector, SMatrix
@@ -19,7 +20,7 @@ export Size
 export @SVector, @SMatrix, @SArray
 export @MVector, @MMatrix, @MArray
 
-export similar_type
+export similar_type, setindex
 
 include("util.jl")
 
